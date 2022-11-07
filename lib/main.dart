@@ -32,6 +32,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  TextEditingController controller = TextEditingController();
+  ValidateEnum state = ValidateEnum.notValid;
+
   void _incrementCounter() {
     setState(() {
       _counter++;
@@ -56,7 +59,20 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headline4,
             ),
             SizedBox(width: 200, height: 200, child: Assets.test.image()),
-            Assets.test.image(),
+            TextFieldCustom(
+              isActive: true,
+              controller: controller,
+              state: state,
+              onChanged: (value) {
+                setState(() {
+                  if (value.length >= 5) {
+                    state = ValidateEnum.valid;
+                  } else {
+                    state = ValidateEnum.notValid;
+                  }
+                });
+              },
+            ),
             const SizedBox(
               height: 12,
             ),
@@ -70,5 +86,62 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+}
+
+class TextFieldCustom extends StatelessWidget {
+  const TextFieldCustom({
+    Key? key,
+    required this.controller,
+    required this.state,
+    required this.onChanged,
+    this.isActive,
+  }) : super(key: key);
+
+  final TextEditingController controller;
+  final ValidateEnum state;
+  final Function(String)? onChanged;
+  final bool? isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        enabled: isActive ?? true,
+        onChanged: onChanged,
+        controller: controller,
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          hintText: 'Input Placeholder',
+          filled: true,
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(width: 3, color: controller.text.length >= 5 ? Colors.green : Colors.red),
+          ),
+          suffixIcon: controller.text.isEmpty ? const SizedBox() : IconCustom(state: state),
+        ),
+      ),
+    );
+  }
+}
+
+enum ValidateEnum {
+  notValid,
+  valid,
+}
+
+class IconCustom extends StatelessWidget {
+  const IconCustom({super.key, required this.state});
+
+  final ValidateEnum state;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (state) {
+      case ValidateEnum.notValid:
+        return const Icon(Icons.warning);
+      case ValidateEnum.valid:
+        return const Icon(Icons.checklist);
+    }
   }
 }
